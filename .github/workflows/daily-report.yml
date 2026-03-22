@@ -2,7 +2,7 @@ name: Daily Trade Report
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # 每天 UTC 00:00（香港時間早上 8:00）
+    - cron: '0 0 * * *'  # 每天 UTC 00:00（香港时间早上 8:00）
   workflow_dispatch:
 
 jobs:
@@ -11,10 +11,10 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4.2.2  # 最新 patch 版，已內建 node24
+      uses: actions/checkout@v3
 
     - name: Set up Python
-      uses: actions/setup-python@v5.3.0  # 最新 patch 版，已內建 node24
+      uses: actions/setup-python@v4
       with:
         python-version: '3.11'
 
