@@ -3,13 +3,13 @@ name: Daily Trade Report
 on:
   schedule:
     - cron: '0 0 * * *'  # 每天 UTC 00:00（香港時間早上 8:00）
-  workflow_dispatch:     # 允許手動觸發
+  workflow_dispatch:
 
 jobs:
   generate-report:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # 強制使用 Node.js 24
+    env:  # ← 移到這裡（job 層級）
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
     - name: Checkout repository
