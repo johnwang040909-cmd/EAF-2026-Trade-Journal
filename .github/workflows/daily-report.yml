@@ -3,32 +3,37 @@ name: Daily Trade Report
 on:
   schedule:
     - cron: '0 0 * * *'  # 每天 UTC 00:00（香港時間早上 8:00）
-  workflow_dispatch:     # 允許手動觸發
+  workflow_dispatch:
 
 jobs:
   generate-report:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # 強制遷移到 Node.js 24
 
     steps:
+    # 使用最新 checkout action（已內建 node24 兼容）
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    # 使用最新 setup-python（v5 已支援 node24）
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
 
+    # 安裝依賴
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install pandas yfinance requests
 
+    # 執行腳本
     - name: Run daily report script
       run: python analysis/daily_report.py
 
+    # 提交報告
     - name: Commit and push report
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         git config --global user.name 'GitHub Actions Bot'
         git config --global user.email 'actions@github.com'
