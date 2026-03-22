@@ -2,19 +2,23 @@ name: Daily Trade Report
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # 每天 UTC 00:00（香港时间早上 8:00）
+    - cron: '0 0 * * *'  # 每天 UTC 00:00（香港時間早上 8:00）
   workflow_dispatch:
 
 jobs:
   generate-report:
     runs-on: ubuntu-latest
 
+    # 赋予工作流写入仓库的权限
+    permissions:
+      contents: write
+
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
 
@@ -30,8 +34,18 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
+        # 确保 reports/ 目录存在
+        mkdir -p reports
+
+        # 配置 Git 用户信息
         git config --global user.name 'GitHub Actions Bot'
         git config --global user.email 'actions@github.com'
+
+        # 配置带 Token 的远端 URL（关键修复）
+        git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
+
+        # 暂存、提交、推送
         git add reports/
         git commit -m "Auto-generated daily trade report $(date +'%Y-%m-%d')" || echo "No changes to commit"
-        git push
+        git push origin HEAD
+``*
