@@ -11,10 +11,10 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4.2.2  # 升級到最新 patch 版
+      uses: actions/checkout@v4.2.2  # 最新 patch 版，已內建 node24
 
     - name: Set up Python
-      uses: actions/setup-python@v5.3.0  # 升級到最新 patch 版
+      uses: actions/setup-python@v5.3.0  # 最新 patch 版，已內建 node24
       with:
         python-version: '3.11'
 
@@ -28,7 +28,7 @@ jobs:
 
     - name: Commit and push report
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 確保 push 權限
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         git config --global user.name 'GitHub Actions Bot'
         git config --global user.email 'actions@github.com'
