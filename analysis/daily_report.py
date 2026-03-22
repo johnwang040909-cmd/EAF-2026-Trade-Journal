@@ -2,6 +2,7 @@
 import pandas as pd
 import yfinance as yf
 from datetime import datetime
+import os  # 新增 os 模組
 
 # 你的持倉
 holdings = [
@@ -63,10 +64,15 @@ def generate_report():
     md_content += f"**Total P&L**: ${total_pnl:,.2f} ({total_pnl_pct:.2f}%)\n\n"
     md_content += df.to_markdown(index=False)
 
-    with open(f"reports/daily_report_{today}.md", "w") as f:
+    # 自動創建 reports 資料夾（如果不存在）
+    os.makedirs("reports", exist_ok=True)
+
+    # 保存報告
+    report_path = f"reports/daily_report_{today}.md"
+    with open(report_path, "w") as f:
         f.write(md_content)
 
-    print("Daily report generated!")
+    print(f"Daily report generated at {report_path}!")
 
 if __name__ == "__main__":
     generate_report()
