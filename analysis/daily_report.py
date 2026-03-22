@@ -3,7 +3,7 @@ import pandas as pd
 import yfinance as yf
 from datetime import datetime
 
-# 你的持倉（未來可改成從 CSV 讀取）
+# 你的持倉
 holdings = [
     {"ticker": "BCRX", "shares": 1000, "entry_price": 9.80},
     {"ticker": "02546.HK", "shares": 3000, "entry_price": 15.63}
@@ -19,12 +19,18 @@ def generate_report():
         shares = pos["shares"]
         entry = pos["entry_price"]
 
-        # 拉取最新價格
+        current_price = 0
+        error_msg = ""
+
         stock = yf.Ticker(ticker)
         try:
-            current_price = stock.history(period="1d")["Close"].iloc[-1]
-        except:
-            current_price = 0  # 防錯
+            hist = stock.history(period="1d")
+            if not hist.empty:
+                current_price = hist["Close"].iloc[-1]
+            else:
+                error_msg = "No data returned (empty DataFrame)"
+        except Exception as e:
+            error_msg = str(e)
 
         cost = shares * entry
         value = shares * current_price
@@ -39,7 +45,8 @@ def generate_report():
             "Cost": round(cost, 2),
             "Value": round(value, 2),
             "P&L": round(pnl, 2),
-            "P&L %": round(pnl_pct, 2)
+            "P&L %": round(pnl_pct, 2),
+            "Error": error_msg if error_msg else "OK"
         })
 
         total_cost += cost
@@ -49,7 +56,6 @@ def generate_report():
     total_pnl = total_value - total_cost
     total_pnl_pct = (total_pnl / total_cost) * 100 if total_cost != 0 else 0
 
-    # 生成 Markdown 報告
     today = datetime.now().strftime("%Y-%m-%d")
     md_content = f"# Daily Trade Report - {today}\n\n"
     md_content += f"**Total Cost**: ${total_cost:,.2f}\n"
@@ -57,7 +63,6 @@ def generate_report():
     md_content += f"**Total P&L**: ${total_pnl:,.2f} ({total_pnl_pct:.2f}%)\n\n"
     md_content += df.to_markdown(index=False)
 
-    # 保存到 reports/
     with open(f"reports/daily_report_{today}.md", "w") as f:
         f.write(md_content)
 
