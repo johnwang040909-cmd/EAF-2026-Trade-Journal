@@ -1,37 +1,54 @@
-# analysis/daily_report.py - 每日持倉報告生成
+# analysis/daily_report.py - 每日持倉報告生成（從 CSV 讀取持倉）
 import pandas as pd
 import yfinance as yf
 from datetime import datetime
-import os  # 新增 os 模組
+import os
 
-# 你的持倉
-holdings = [
-    {"ticker": "BCRX", "shares": 1000, "entry_price": 9.80},
-    {"ticker": "02546.HK", "shares": 3000, "entry_price": 15.63}
-]
+# 從 CSV 讀取持倉數據
+# CSV 格式：ticker,shares,entry_price（第一行是標題）
+# 例如：
+# ticker,shares,entry_price
+# BCRX,1000,9.80
+# 02546.HK,3000,15.63
+try:
+    holdings_df = pd.read_csv("data/holdings.csv")
+    holdings = holdings_df.to_dict('records')
+except FileNotFoundError:
+    print("Error: data/holdings.csv not found. Please create the CSV file.")
+    holdings = []  # 如果 CSV 不存在，就用空列表
+except Exception as e:
+    print(f"Error reading CSV: {e}")
+    holdings = []
 
 def generate_report():
+    if not holdings:
+        print("No holdings data available.")
+        return
+
     report = []
     total_value = 0
     total_cost = 0
 
     for pos in holdings:
-        ticker = pos["ticker"]
-        shares = pos["shares"]
-        entry = pos["entry_price"]
+        ticker = pos.get("ticker", "")
+        shares = float(pos.get("shares", 0))
+        entry = float(pos.get("entry_price", 0))
 
         current_price = 0
         error_msg = ""
 
-        stock = yf.Ticker(ticker)
-        try:
-            hist = stock.history(period="1d")
-            if not hist.empty:
-                current_price = hist["Close"].iloc[-1]
-            else:
-                error_msg = "No data returned (empty DataFrame)"
-        except Exception as e:
-            error_msg = str(e)
+        if not ticker:
+            error_msg = "Missing ticker"
+        else:
+            stock = yf.Ticker(ticker)
+            try:
+                hist = stock.history(period="1d")
+                if not hist.empty:
+                    current_price = hist["Close"].iloc[-1]
+                else:
+                    error_msg = "No data returned (empty DataFrame)"
+            except Exception as e:
+                error_msg = str(e)
 
         cost = shares * entry
         value = shares * current_price
@@ -69,7 +86,7 @@ def generate_report():
 
     # 保存報告
     report_path = f"reports/daily_report_{today}.md"
-    with open(report_path, "w") as f:
+    with open(report_path, "w", encoding="utf-8") as f:
         f.write(md_content)
 
     print(f"Daily report generated at {report_path}!")
