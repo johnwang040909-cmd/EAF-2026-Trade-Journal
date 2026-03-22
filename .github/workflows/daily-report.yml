@@ -10,30 +10,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 使用最新 checkout action（已內建 node24 兼容）
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v4.2.2  # 升級到最新 patch 版
 
-    # 使用最新 setup-python（v5 已支援 node24）
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v5.3.0  # 升級到最新 patch 版
       with:
         python-version: '3.11'
 
-    # 安裝依賴
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install pandas yfinance requests
 
-    # 執行腳本
     - name: Run daily report script
       run: python analysis/daily_report.py
 
-    # 提交報告
     - name: Commit and push report
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 確保 push 權限
       run: |
         git config --global user.name 'GitHub Actions Bot'
         git config --global user.email 'actions@github.com'
